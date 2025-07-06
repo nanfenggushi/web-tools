@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能网盘直链转换器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .background-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .floating-shape {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .floating-shape:nth-child(1) {
+            width: 100px;
+            height: 100px;
+            top: 20%;
+            left: 20%;
+            animation-delay: 0s;
+        }
+
+        .floating-shape:nth-child(2) {
+            width: 150px;
+            height: 150px;
+            top: 60%;
+            right: 20%;
+            animation-delay: 2s;
+        }
+
+        .floating-shape:nth-child(3) {
+            width: 80px;
+            height: 80px;
+            bottom: 20%;
+            left: 30%;
+            animation-delay: 4s;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-20px) rotate(180deg);
+            }
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            z-index: 1;
+            animation: slideUp 0.8s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+
+        .platform-indicators {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .platform-badge {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .platform-badge:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .input-field::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .input-field:focus {
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .convert-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #ff6b6b, #ffa500);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .convert-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(255, 107, 107, 0.3);
+        }
+
+        .convert-btn:active {
+            transform: translateY(0);
+        }
+
+        .convert-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .convert-btn:hover::before {
+            left: 100%;
+        }
+
+        .result-section {
+            margin-top: 30px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        .result-section.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .result-wrapper {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .result-label {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .result-link {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 15px;
+            color: white;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9rem;
+            word-break: break-all;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .copy-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .test-btn {
+            background: rgba(76, 175, 80, 0.2);
+            color: white;
+            border: 1px solid rgba(76, 175, 80, 0.5);
+            border-radius: 10px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .test-btn:hover {
+            background: rgba(76, 175, 80, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .detection-info {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .detection-info h3 {
+            color: white;
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+
+        .detection-info p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+
+        .error-message {
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid rgba(244, 67, 54, 0.5);
+            border-radius: 12px;
+            padding: 15px;
+            color: white;
+            margin-top: 15px;
+            border-left: 4px solid #f44336;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .platform-indicators {
+                gap: 10px;
+            }
+
+            .platform-badge {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="background-animation">
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>🔗 智能直链转换器</h1>
+            <p>支持主流网盘分享链接一键转换为直接下载链接</p>
+        </div>
+
+        <div class="platform-indicators">
+            <div class="platform-badge">Google Drive</div>
+            <div class="platform-badge">OneDrive</div>
+            <div class="platform-badge">Dropbox</div>
+            <div class="platform-badge">百度网盘</div>
+            <div class="platform-badge">蓝奏云</div>
+        </div>
+
+        <div class="input-section">
+            <div class="input-wrapper">
+                <input type="text" class="input-field" id="shareLink" placeholder="请粘贴网盘分享链接...">
+            </div>
+            <button class="convert-btn" onclick="convertLink()">
+                <span id="convertText">🚀 智能转换</span>
+            </button>
+        </div>
+
+        <div class="result-section" id="resultSection">
+            <div id="detectionInfo" class="detection-info" style="display: none;">
+                <h3 id="detectedPlatform"></h3>
+                <p id="detectedType"></p>
+            </div>
+
+            <div class="result-wrapper">
+                <div class="result-label">直接下载链接：</div>
+                <div class="result-link" id="resultLink"></div>
+                <button class="copy-btn" onclick="copyToClipboard()">📋 复制链接</button>
+                <button class="test-btn" onclick="testLink()">🔍 测试链接</button>
+            </div>
+        </div>
+
+        <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+        <div class="footer">
+            <p>💡 支持自动识别网盘类型 • 一键转换 • 安全可靠</p>
+        </div>
+    </div>
+
+    <script>
+        // 网盘平台配置
+        const platforms = {
+            'drive.google.com': {
+                name: 'Google Drive',
+                icon: '🗂️',
+                patterns: [
+                    {
+                        regex: /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/,
+                        converter: (match) => `https://drive.google.com/uc?export=download&id=${match[1]}`
+                    }
+                ]
+            },
+            'onedrive.live.com': {
+                name: 'OneDrive',
+                icon: '☁️',
+                patterns: [
+                    {
+                        regex: /onedrive\.live\.com.*resid=([^&]+)/,
+                        converter: (match) => {
+                            const resid = match[1];
+                            return `https://onedrive.live.com/download?resid=${resid}`;
+                        }
+                    },
+                    {
+                        regex: /1drv\.ms\/[a-zA-Z]\/([a-zA-Z0-9_-]+)/,
+                        converter: (match) => `https://onedrive.live.com/download?cid=${match[1]}`
+                    }
+                ]
+            },
+            'dropbox.com': {
+                name: 'Dropbox',
+                icon: '📦',
+                patterns: [
+                    {
+                        regex: /dropbox\.com\/s\/([a-zA-Z0-9_-]+)/,
+                        converter: (match, originalUrl) => originalUrl.replace('dropbox.com', 'dl.dropboxusercontent.com').replace('?dl=0', '').replace('?dl=1', '')
+                    },
+                    {
+                        regex: /dropbox\.com\/scl\/fi\/([^?]+)/,
+                        converter: (match, originalUrl) => originalUrl.replace('dropbox.com', 'dl.dropboxusercontent.com').replace('?dl=0', '').replace('?dl=1', '')
+                    }
+                ]
+            },
+            'pan.baidu.com': {
+                name: '百度网盘',
+                icon: '💾',
+                patterns: [
+                    {
+                        regex: /pan\.baidu\.com\/s\/([a-zA-Z0-9_-]+)/,
+                        converter: (match) => {
+                            return `⚠️ 百度网盘需要提取码，建议使用其他工具获取直链`;
+                        }
+                    }
+                ]
+            },
+            'lanzou.com': {
+                name: '蓝奏云',
+                icon: '🌥️',
+                patterns: [
+                    {
+                        regex: /lanzou[a-z]?\.com\/([a-zA-Z0-9_-]+)/,
+                        converter: (match, originalUrl) => {
+                            return `⚠️ 蓝奏云需要解析页面获取真实下载链接`;
+                        }
+                    }
+                ]
+            }
+        };
+
+        let currentResult = '';
+
+        function convertLink() {
+            const input = document.getElementById('shareLink');
+            const url = input.value.trim();
+            const convertBtn = document.querySelector('.convert-btn');
+            const convertText = document.getElementById('convertText');
+            const resultSection = document.getElementById('resultSection');
+            const errorMessage = document.getElementById('errorMessage');
+            const detectionInfo = document.getElementById('detectionInfo');
+
+            // 清除之前的结果
+            errorMessage.style.display = 'none';
+            resultSection.classList.remove('show');
+            detectionInfo.style.display = 'none';
+
+            if (!url) {
+                showError('请输入网盘分享链接');
+                return;
+            }
+
+            // 显示加载状态
+            convertText.innerHTML = '<span class="loading"></span>转换中...';
+            convertBtn.disabled = true;
+
+            // 模拟转换过程
+            setTimeout(() => {
+                try {
+                    const result = processLink(url);
+                    if (result.success) {
+                        showResult(result);
+                    } else {
+                        showError(result.error);
+                    }
+                } catch (error) {
+                    showError('转换失败，请检查链接格式');
+                }
+
+                // 恢复按钮状态
+                convertText.innerHTML = '🚀 智能转换';
+                convertBtn.disabled = false;
+            }, 1000);
+        }
+
+        function processLink(url) {
+            // 检测平台
+            for (const [domain, platform] of Object.entries(platforms)) {
+                if (url.includes(domain)) {
+                    // 尝试匹配模式
+                    for (const pattern of platform.patterns) {
+                        const match = url.match(pattern.regex);
+                        if (match) {
+                            const directLink = pattern.converter(match, url);
+                            return {
+                                success: true,
+                                platform: platform.name,
+                                icon: platform.icon,
+                                directLink: directLink,
+                                originalUrl: url
+                            };
+                        }
+                    }
+                }
+            }
+
+            return {
+                success: false,
+                error: '暂不支持该网盘或链接格式不正确'
+            };
+        }
+
+        function showResult(result) {
+            const resultSection = document.getElementById('resultSection');
+            const resultLink = document.getElementById('resultLink');
+            const detectionInfo = document.getElementById('detectionInfo');
+            const detectedPlatform = document.getElementById('detectedPlatform');
+            const detectedType = document.getElementById('detectedType');
+
+            // 显示检测信息
+            detectedPlatform.textContent = `${result.icon} ${result.platform}`;
+            detectedType.textContent = '已自动识别平台并转换为直链';
+            detectionInfo.style.display = 'block';
+
+            // 显示结果
+            resultLink.textContent = result.directLink;
+            currentResult = result.directLink;
+
+            resultSection.classList.add('show');
+        }
+
+        function showError(message) {
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+        }
+
+        function copyToClipboard() {
+            if (currentResult) {
+                navigator.clipboard.writeText(currentResult).then(() => {
+                    const copyBtn = document.querySelector('.copy-btn');
+                    const originalText = copyBtn.textContent;
+                    copyBtn.textContent = '✅ 已复制';
+                    copyBtn.style.background = 'rgba(76, 175, 80, 0.3)';
+
+                    setTimeout(() => {
+                        copyBtn.textContent = originalText;
+                        copyBtn.style.background = 'rgba(255, 255, 255, 0.2)';
+                    }, 2000);
+                });
+            }
+        }
+
+        function testLink() {
+            if (currentResult) {
+                if (currentResult.startsWith('⚠️')) {
+                    alert('该链接需要额外处理，无法直接测试');
+                    return;
+                }
+
+                const testBtn = document.querySelector('.test-btn');
+                const originalText = testBtn.textContent;
+                testBtn.textContent = '🔍 测试中...';
+
+                // 在新窗口中打开链接进行测试
+                window.open(currentResult, '_blank');
+
+                setTimeout(() => {
+                    testBtn.textContent = originalText;
+                }, 2000);
+            }
+        }
+
+        // 支持回车键转换
+        document.getElementById('shareLink').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                convertLink();
+            }
+        });
+
+        // 自动粘贴功能
+        document.getElementById('shareLink').addEventListener('focus', function () {
+            if (this.value === '') {
+                navigator.clipboard.readText().then(text => {
+                    if (text && (text.includes('drive.google.com') || text.includes('onedrive.live.com') || text.includes('dropbox.com') || text.includes('pan.baidu.com') || text.includes('lanzou'))) {
+                        this.value = text;
+                    }
+                }).catch(() => {
+                    // 静默失败
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>
