@@ -78,7 +78,7 @@
 ### 方法二：本地HTTP服务器运行
 ```bash
 # 克隆仓库
-git clone https://github.com/your-username/web-tools.git
+git clone https://github.com/nanfenggushi/web-tools.git
 
 # 进入项目目录
 cd web-tools
